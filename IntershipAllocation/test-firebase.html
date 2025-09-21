@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Test - InternAI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f8fafc;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .test-result {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.5rem;
+            border-left: 4px solid #e2e8f0;
+        }
+        .test-pass {
+            background: #d1fae5;
+            border-left-color: #10b981;
+        }
+        .test-fail {
+            background: #fee2e2;
+            border-left-color: #ef4444;
+        }
+        .btn {
+            background: #8b5cf6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+        }
+        .btn:hover {
+            background: #7c3aed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Firebase Integration Test</h1>
+        <p>This page tests if Firebase is properly connected to your InternAI system.</p>
+        
+        <button class="btn" onclick="testFirebaseConnection()">Test Firebase Connection</button>
+        <button class="btn" onclick="testAddStudent()">Test Add Student</button>
+        <button class="btn" onclick="testAddCompany()">Test Add Company</button>
+        <button class="btn" onclick="testAddLog()">Test Add Log</button>
+        <button class="btn" onclick="clearResults()">Clear Results</button>
+        
+        <div id="test-results"></div>
+    </div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getDatabase, ref, set } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+      
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCLMtTwBa3aJdXjbMiO5MHay0PdAc-UTeM",
+            authDomain: "internai-allocation-system.firebaseapp.com",
+            databaseURL: "https://internai-allocation-system-default-rtdb.firebaseio.com",
+            projectId: "internai-allocation-system",
+            storageBucket: "internai-allocation-system.firebasestorage.app",
+            messagingSenderId: "937130886247",
+            appId: "1:937130886247:web:bcba0f274abae2dc9280c2",
+            measurementId: "G-TJ3DZ8YL6T"
+        };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const rtdb = getDatabase(app);
+        const auth = getAuth(app);
+      
+        // Make Firebase available globally
+        window.firebase = { db, rtdb, auth, collection, addDoc, getDocs, ref, set };
+        
+        // Initialize Firebase service
+        window.firebaseService = {
+            async addStudent(student) {
+                try {
+                    const docRef = await addDoc(collection(db, 'students'), {
+                        ...student,
+                        created_at: new Date(),
+                        updated_at: new Date()
+                    });
+                    console.log('Student added with ID: ', docRef.id);
+                    return docRef.id;
+                } catch (error) {
+                    console.error('Error adding student: ', error);
+                    throw error;
+                }
+            },
+            
+            async getStudents() {
+                try {
+                    const querySnapshot = await getDocs(collection(db, 'students'));
+                    const students = [];
+                    querySnapshot.forEach((doc) => {
+                        students.push({ id: doc.id, ...doc.data() });
+                    });
+                    return students;
+                } catch (error) {
+                    console.error('Error getting students: ', error);
+                    throw error;
+                }
+            },
+            
+            async addLog(agent, message, status) {
+                try {
+                    const docRef = await addDoc(collection(db, 'ai_logs'), {
+                        agent,
+                        message,
+                        status,
+                        timestamp: new Date()
+                    });
+                    console.log('Log added with ID: ', docRef.id);
+                    return docRef.id;
+                } catch (error) {
+                    console.error('Error adding log: ', error);
+                    throw error;
+                }
+            },
+            
+            async addCompany(company) {
+                try {
+                    const docRef = await addDoc(collection(db, 'companies'), {
+                        ...company,
+                        created_at: new Date(),
+                        updated_at: new Date()
+                    });
+                    console.log('Company added with ID: ', docRef.id);
+                    return docRef.id;
+                } catch (error) {
+                    console.error('Error adding company: ', error);
+                    throw error;
+                }
+            },
+            
+            async getCompanies() {
+                try {
+                    const querySnapshot = await getDocs(collection(db, 'companies'));
+                    const companies = [];
+                    querySnapshot.forEach((doc) => {
+                        companies.push({ id: doc.id, ...doc.data() });
+                    });
+                    return companies;
+                } catch (error) {
+                    console.error('Error getting companies: ', error);
+                    throw error;
+                }
+            }
+        };
+
+        // Test functions
+        window.testFirebaseConnection = async function() {
+            addResult('Testing Firebase Connection...', 'info');
+            
+            try {
+                // Test Firestore connection
+                const testRef = collection(db, 'test');
+                await addDoc(testRef, { test: true, timestamp: new Date() });
+                addResult('✅ Firebase Firestore connection successful!', 'pass');
+                
+                // Test Realtime Database connection
+                await set(ref(rtdb, 'test'), { test: true, timestamp: new Date().toISOString() });
+                addResult('✅ Firebase Realtime Database connection successful!', 'pass');
+                
+                addResult('🎉 All Firebase services are working correctly!', 'pass');
+            } catch (error) {
+                addResult(`❌ Firebase connection failed: ${error.message}`, 'fail');
+            }
+        };
+
+        window.testAddStudent = async function() {
+            addResult('Testing Add Student...', 'info');
+            
+            try {
+                const testStudent = {
+                    name: 'Test Student',
+                    email: 'test@example.com',
+                    major: 'Computer Science',
+                    year: 'Junior',
+                    gpa: 3.5,
+                    skills: ['JavaScript', 'Python'],
+                    interests: ['Web Development', 'AI']
+                };
+                
+                const studentId = await window.firebaseService.addStudent(testStudent);
+                addResult(`✅ Student added successfully with ID: ${studentId}`, 'pass');
+                
+                // Verify student was added
+                const students = await window.firebaseService.getStudents();
+                const addedStudent = students.find(s => s.id === studentId);
+                if (addedStudent) {
+                    addResult('✅ Student verification successful!', 'pass');
+                } else {
+                    addResult('❌ Student verification failed!', 'fail');
+                }
+            } catch (error) {
+                addResult(`❌ Add Student failed: ${error.message}`, 'fail');
+            }
+        };
+
+        window.testAddCompany = async function() {
+            addResult('Testing Add Company...', 'info');
+            
+            try {
+                const testCompany = {
+                    name: 'Test Company Inc.',
+                    industry: 'Technology',
+                    location: 'San Francisco, CA',
+                    size: 'Startup (1-50 employees)',
+                    description: 'A test company for Firebase integration testing',
+                    positions: 2,
+                    requirements: ['JavaScript', 'Python', 'React'],
+                    culture: ['Innovation', 'Collaboration', 'Growth']
+                };
+                
+                const companyId = await window.firebaseService.addCompany(testCompany);
+                addResult(`✅ Company added successfully with ID: ${companyId}`, 'pass');
+                
+                // Verify company was added
+                const companies = await window.firebaseService.getCompanies();
+                const addedCompany = companies.find(c => c.id === companyId);
+                if (addedCompany) {
+                    addResult('✅ Company verification successful!', 'pass');
+                } else {
+                    addResult('❌ Company verification failed!', 'fail');
+                }
+            } catch (error) {
+                addResult(`❌ Add Company failed: ${error.message}`, 'fail');
+            }
+        };
+
+        window.testAddLog = async function() {
+            addResult('Testing Add Log...', 'info');
+            
+            try {
+                const logId = await window.firebaseService.addLog('Test Agent', 'Test log message', 'success');
+                addResult(`✅ Log added successfully with ID: ${logId}`, 'pass');
+            } catch (error) {
+                addResult(`❌ Add Log failed: ${error.message}`, 'fail');
+            }
+        };
+
+        window.clearResults = function() {
+            document.getElementById('test-results').innerHTML = '';
+        };
+
+        function addResult(message, type) {
+            const resultsDiv = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result test-${type}`;
+            resultDiv.textContent = message;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        // Auto-run connection test on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(testFirebaseConnection, 1000);
+        });
+    </script>
+</body>
+</html>

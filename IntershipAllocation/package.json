@@ -1,0 +1,42 @@
+{
+  "name": "internai-multi-agent-allocation",
+  "version": "1.0.0",
+  "description": "A comprehensive web application for intelligent internship allocation and recommendation using Gemini multi-agent AI system",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "npx serve .",
+    "dev": "npx live-server --port=3000 --open=/index.html"
+  },
+  "keywords": [
+    "internship",
+    "allocation",
+    "ai",
+    "gemini",
+    "multi-agent",
+    "recommendation",
+    "students",
+    "companies",
+    "matching"
+  ],
+  "author": "InternAI Team",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "serve": "^14.2.1"
+  },
+  "dependencies": {
+    "firebase": "^12.3.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/internai-allocation-system.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/internai-allocation-system/issues"
+  },
+  "homepage": "https://github.com/your-username/internai-allocation-system#readme"
+}

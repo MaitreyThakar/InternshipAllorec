@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternAI - System Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f8fafc;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .test-item {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.5rem;
+            border-left: 4px solid #e2e8f0;
+        }
+        .test-pass {
+            background: #d1fae5;
+            border-left-color: #10b981;
+        }
+        .test-fail {
+            background: #fee2e2;
+            border-left-color: #ef4444;
+        }
+        .test-warning {
+            background: #fef3c7;
+            border-left-color: #f59e0b;
+        }
+        .btn {
+            background: #8b5cf6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+        }
+        .btn:hover {
+            background: #7c3aed;
+        }
+        #test-results {
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 InternAI System Test</h1>
+        <p>This page tests all components of the InternAI Multi-Agent Allocation System.</p>
+        
+        <button class="btn" onclick="runAllTests()">Run All Tests</button>
+        <button class="btn" onclick="clearResults()">Clear Results</button>
+        <a href="index.html" class="btn">Back to App</a>
+        
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        // Test configuration
+        const tests = [
+            {
+                name: "Configuration Load",
+                test: () => typeof CONFIG !== 'undefined',
+                message: "Configuration file loaded successfully"
+            },
+            {
+                name: "Demo Data Load",
+                test: () => typeof demoStudents !== 'undefined' && demoStudents.length > 0,
+                message: "Demo data loaded successfully"
+            },
+            {
+                name: "Student Data Structure",
+                test: () => {
+                    if (!demoStudents || demoStudents.length === 0) return false;
+                    const student = demoStudents[0];
+                    return student.hasOwnProperty('id') && 
+                           student.hasOwnProperty('name') && 
+                           student.hasOwnProperty('email') && 
+                           student.hasOwnProperty('skills');
+                },
+                message: "Student data structure is valid"
+            },
+            {
+                name: "Company Data Structure",
+                test: () => {
+                    if (!demoCompanies || demoCompanies.length === 0) return false;
+                    const company = demoCompanies[0];
+                    return company.hasOwnProperty('id') && 
+                           company.hasOwnProperty('name') && 
+                           company.hasOwnProperty('industry') && 
+                           company.hasOwnProperty('requirements');
+                },
+                message: "Company data structure is valid"
+            },
+            {
+                name: "Logs Data Structure",
+                test: () => {
+                    if (!demoLogs || demoLogs.length === 0) return false;
+                    const log = demoLogs[0];
+                    return log.hasOwnProperty('id') && 
+                           log.hasOwnProperty('agent') && 
+                           log.hasOwnProperty('message') && 
+                           log.hasOwnProperty('status');
+                },
+                message: "Logs data structure is valid"
+            },
+            {
+                name: "AI Agents Configuration",
+                test: () => {
+                    if (!CONFIG || !CONFIG.agents) return false;
+                    const agentKeys = Object.keys(CONFIG.agents);
+                    return agentKeys.length >= 6;
+                },
+                message: "AI agents configuration is complete"
+            },
+            {
+                name: "Gemini API Configuration",
+                test: () => {
+                    if (!CONFIG || !CONFIG.gemini) return false;
+                    return CONFIG.gemini.hasOwnProperty('apiKey') && 
+                           CONFIG.gemini.hasOwnProperty('baseUrl') &&
+                           CONFIG.gemini.hasOwnProperty('models');
+                },
+                message: "Gemini API configuration is present"
+            },
+            {
+                name: "UI Theme Configuration",
+                test: () => {
+                    if (!CONFIG || !CONFIG.ui || !CONFIG.ui.theme) return false;
+                    const theme = CONFIG.ui.theme;
+                    return theme.hasOwnProperty('primary') && 
+                           theme.hasOwnProperty('success') && 
+                           theme.hasOwnProperty('error');
+                },
+                message: "UI theme configuration is valid"
+            },
+            {
+                name: "Feature Flags",
+                test: () => {
+                    if (!CONFIG || !CONFIG.features) return false;
+                    return CONFIG.features.hasOwnProperty('realTimeUpdates') && 
+                           CONFIG.features.hasOwnProperty('exportLogs');
+                },
+                message: "Feature flags configuration is valid"
+            },
+            {
+                name: "Validation Rules",
+                test: () => {
+                    if (!CONFIG || !CONFIG.validation) return false;
+                    return CONFIG.validation.hasOwnProperty('student') && 
+                           CONFIG.validation.hasOwnProperty('company');
+                },
+                message: "Validation rules configuration is valid"
+            }
+        ];
+
+        function runAllTests() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<h2>Test Results</h2>';
+            
+            let passedTests = 0;
+            let totalTests = tests.length;
+            
+            tests.forEach((test, index) => {
+                const testDiv = document.createElement('div');
+                testDiv.className = 'test-item';
+                
+                try {
+                    const result = test.test();
+                    if (result) {
+                        testDiv.classList.add('test-pass');
+                        testDiv.innerHTML = `✅ ${test.name}: ${test.message}`;
+                        passedTests++;
+                    } else {
+                        testDiv.classList.add('test-fail');
+                        testDiv.innerHTML = `❌ ${test.name}: Test failed`;
+                    }
+                } catch (error) {
+                    testDiv.classList.add('test-fail');
+                    testDiv.innerHTML = `❌ ${test.name}: Error - ${error.message}`;
+                }
+                
+                resultsDiv.appendChild(testDiv);
+            });
+            
+            // Summary
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'test-item';
+            summaryDiv.style.marginTop = '2rem';
+            
+            if (passedTests === totalTests) {
+                summaryDiv.classList.add('test-pass');
+                summaryDiv.innerHTML = `🎉 All tests passed! (${passedTests}/${totalTests})`;
+            } else {
+                summaryDiv.classList.add('test-warning');
+                summaryDiv.innerHTML = `⚠️ ${passedTests}/${totalTests} tests passed`;
+            }
+            
+            resultsDiv.appendChild(summaryDiv);
+        }
+
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '';
+        }
+
+        // Auto-run tests on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load required scripts
+            const scripts = ['config.js', 'demo-data.js'];
+            let loadedScripts = 0;
+            
+            scripts.forEach(script => {
+                const scriptElement = document.createElement('script');
+                scriptElement.src = script;
+                scriptElement.onload = () => {
+                    loadedScripts++;
+                    if (loadedScripts === scripts.length) {
+                        setTimeout(runAllTests, 100);
+                    }
+                };
+                document.head.appendChild(scriptElement);
+            });
+        });
+    </script>
+</body>
+</html>

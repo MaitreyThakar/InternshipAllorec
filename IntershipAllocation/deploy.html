@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternAI - Deployment Guide</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+            background: #f8fafc;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        h1 {
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+        h2 {
+            color: #374151;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .code {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Courier New', monospace;
+            margin: 1rem 0;
+            border-left: 4px solid #8b5cf6;
+        }
+        .step {
+            background: #e0f2fe;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid #0ea5e9;
+        }
+        .warning {
+            background: #fef3c7;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid #f59e0b;
+        }
+        .success {
+            background: #d1fae5;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid #10b981;
+        }
+        a {
+            color: #8b5cf6;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .btn {
+            display: inline-block;
+            background: #8b5cf6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+            transition: background 0.3s ease;
+        }
+        .btn:hover {
+            background: #7c3aed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 InternAI Deployment Guide</h1>
+        
+        <p>Welcome to InternAI! This guide will help you deploy and run the Multi-Agent Allocation System.</p>
+        
+        <h2>📋 Quick Start</h2>
+        
+        <div class="step">
+            <strong>Step 1:</strong> Open the main application
+            <div class="code">
+                <a href="index.html" class="btn">Open InternAI</a>
+            </div>
+        </div>
+        
+        <div class="step">
+            <strong>Step 2:</strong> Configure Gemini API (Optional for demo)
+            <div class="code">
+                1. Get API key from: <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a><br>
+                2. Open script.js<br>
+                3. Replace 'your-gemini-api-key' with your actual key
+            </div>
+        </div>
+        
+        <h2>🔧 Development Setup</h2>
+        
+        <div class="step">
+            <strong>Option 1: Python HTTP Server</strong>
+            <div class="code">
+                # Navigate to project directory<br>
+                cd InternAI<br><br>
+                # Start Python server<br>
+                python -m http.server 8000<br><br>
+                # Open in browser<br>
+                http://localhost:8000
+            </div>
+        </div>
+        
+        <div class="step">
+            <strong>Option 2: Node.js Live Server</strong>
+            <div class="code">
+                # Install live-server globally<br>
+                npm install -g live-server<br><br>
+                # Start development server<br>
+                live-server --port=3000<br><br>
+                # Open in browser<br>
+                http://localhost:3000
+            </div>
+        </div>
+        
+        <div class="step">
+            <strong>Option 3: VS Code Live Server</strong>
+            <div class="code">
+                1. Install "Live Server" extension in VS Code<br>
+                2. Right-click on index.html<br>
+                3. Select "Open with Live Server"
+            </div>
+        </div>
+        
+        <h2>🌐 Production Deployment</h2>
+        
+        <div class="step">
+            <strong>GitHub Pages</strong>
+            <div class="code">
+                1. Create GitHub repository<br>
+                2. Upload all files<br>
+                3. Go to Settings → Pages<br>
+                4. Select source branch<br>
+                5. Your app will be available at: username.github.io/repository-name
+            </div>
+        </div>
+        
+        <div class="step">
+            <strong>Netlify</strong>
+            <div class="code">
+                1. Drag and drop project folder to netlify.com<br>
+                2. Or connect GitHub repository<br>
+                3. Automatic deployment on every push
+            </div>
+        </div>
+        
+        <div class="step">
+            <strong>Vercel</strong>
+            <div class="code">
+                1. Install Vercel CLI: npm i -g vercel<br>
+                2. Run: vercel<br>
+                3. Follow the prompts<br>
+                4. Deploy with: vercel --prod
+            </div>
+        </div>
+        
+        <h2>⚙️ Configuration</h2>
+        
+        <div class="warning">
+            <strong>⚠️ Important:</strong> For full AI functionality, you need to configure the Gemini API key in script.js
+        </div>
+        
+        <div class="code">
+            // In script.js, line 456<br>
+            this.apiKey = 'your-gemini-api-key'; // Replace with actual key
+        </div>
+        
+        <h2>📱 Features Overview</h2>
+        
+        <div class="success">
+            <strong>✅ Dashboard:</strong> System overview and metrics<br>
+            <strong>✅ Students:</strong> Manage student profiles and skills<br>
+            <strong>✅ Companies:</strong> Manage company profiles and positions<br>
+            <strong>✅ AI Allocation:</strong> Multi-agent intelligent matching<br>
+            <strong>✅ AI Logs:</strong> Real-time monitoring and analytics
+        </div>
+        
+        <h2>🤖 AI Agents</h2>
+        
+        <ul>
+            <li><strong>Student Analyzer:</strong> Analyzes profiles and skills</li>
+            <li><strong>Company Matcher:</strong> Matches students with companies</li>
+            <li><strong>Allocation Optimizer:</strong> Creates optimal assignments</li>
+            <li><strong>Conflict Resolver:</strong> Handles allocation conflicts</li>
+            <li><strong>Recommendation Engine:</strong> Provides personalized suggestions</li>
+            <li><strong>Quality Assessor:</strong> Evaluates allocation quality</li>
+        </ul>
+        
+        <h2>🔍 Troubleshooting</h2>
+        
+        <div class="warning">
+            <strong>Common Issues:</strong><br>
+            • CORS errors: Use a local server instead of opening file directly<br>
+            • API errors: Check your Gemini API key configuration<br>
+            • Styling issues: Ensure all CSS files are loaded properly<br>
+            • JavaScript errors: Check browser console for details
+        </div>
+        
+        <h2>📞 Support</h2>
+        
+        <p>If you encounter any issues:</p>
+        <ul>
+            <li>Check the AI Logs page for error details</li>
+            <li>Review browser console for JavaScript errors</li>
+            <li>Ensure all files are in the same directory</li>
+            <li>Verify your internet connection for API calls</li>
+        </ul>
+        
+        <div class="success">
+            <strong>🎉 Ready to go!</strong> Your InternAI Multi-Agent Allocation System is ready to use.
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="index.html" class="btn">Launch InternAI</a>
+        </div>
+    </div>
+</body>
+</html>
