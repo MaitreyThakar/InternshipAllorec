@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
     checkAuthentication();
     setupAuthEventListeners();
     setupKeyboardListeners();
+    loadDarkModePreference();
 });
 
 function setupKeyboardListeners() {
@@ -175,6 +176,7 @@ function showPage(pageName) {
 // Dashboard
 function loadDashboard() {
     updateDashboardStats();
+    setTimeout(renderDashboardCharts, 200); // Wait for DOM and data
 }
 
 function updateDashboardStats() {
@@ -182,6 +184,75 @@ function updateDashboardStats() {
     document.getElementById('total-companies').textContent = companies.length;
     document.getElementById('open-positions').textContent = companies.reduce((sum, company) => sum + company.positions, 0);
     document.getElementById('ai-allocations').textContent = logs.filter(log => log.agent === 'Allocation Optimizer').length;
+    // Students Placed
+    let placed = 0;
+    if (window.allocationResults && Array.isArray(window.allocationResults)) {
+        placed = window.allocationResults.filter(a => (a.status || '').toLowerCase() === 'approved').length;
+    }
+    document.getElementById('students-placed').textContent = placed;
+}
+
+// Dashboard Analytics with Chart.js
+let skillsChart, industriesChart, allocationStatusChart;
+function renderDashboardCharts() {
+    // Skill Distribution
+    const skillCounts = {};
+    students.forEach(s => (s.skills || []).forEach(skill => {
+        skillCounts[skill] = (skillCounts[skill] || 0) + 1;
+    }));
+    const skillLabels = Object.keys(skillCounts);
+    const skillData = Object.values(skillCounts);
+    if (skillsChart) skillsChart.destroy();
+    if (skillLabels.length && document.getElementById('skillsChart')) {
+        skillsChart = new Chart(document.getElementById('skillsChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: skillLabels,
+                datasets: [{ data: skillData, backgroundColor: [
+                    '#3b82f6','#10b981','#f59e42','#f43f5e','#6366f1','#fbbf24','#a3e635','#f472b6','#38bdf8','#f87171'] }]
+            },
+            options: { plugins: { legend: { labels: { color: '#222', font: { size: 14 } } } }, cutout: '70%' }
+        });
+    }
+    // Company Industries
+    const industryCounts = {};
+    companies.forEach(c => {
+        if (c.industry) industryCounts[c.industry] = (industryCounts[c.industry] || 0) + 1;
+    });
+    const industryLabels = Object.keys(industryCounts);
+    const industryData = Object.values(industryCounts);
+    if (industriesChart) industriesChart.destroy();
+    if (industryLabels.length && document.getElementById('industriesChart')) {
+        industriesChart = new Chart(document.getElementById('industriesChart').getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: industryLabels,
+                datasets: [{ data: industryData, backgroundColor: [
+                    '#6366f1','#fbbf24','#10b981','#f43f5e','#3b82f6','#f59e42','#a3e635','#f472b6','#38bdf8','#f87171'] }]
+            },
+            options: { plugins: { legend: { labels: { color: '#222', font: { size: 14 } } } } }
+        });
+    }
+    // Allocation Status
+    const allocationCounts = { Pending: 0, Approved: 0, Rejected: 0 };
+    if (window.allocationResults && Array.isArray(window.allocationResults)) {
+        window.allocationResults.forEach(a => {
+            const status = (a.status || 'Pending').charAt(0).toUpperCase() + (a.status || 'Pending').slice(1);
+            allocationCounts[status] = (allocationCounts[status] || 0) + 1;
+        });
+    }
+    if (allocationStatusChart) allocationStatusChart.destroy();
+    if (document.getElementById('allocationStatusChart')) {
+        allocationStatusChart = new Chart(document.getElementById('allocationStatusChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(allocationCounts),
+                datasets: [{ label: 'Allocations', data: Object.values(allocationCounts), backgroundColor: [
+                    '#3b82f6','#10b981','#f43f5e'] }]
+            },
+            options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#222' } }, y: { ticks: { color: '#222' }, beginAtZero: true } } }
+        });
+    }
 }
 
 // Students Management
@@ -655,7 +726,8 @@ async function startAllocation() {
         updateAgentStatus('allocation-optimizer', 'processing');
         addLog('Allocation Optimizer', 'Creating optimal allocations using advanced algorithms...', 'processing');
         
-        await generateAllocationResults();
+        window.allocationResults = await generateAllocationResults(); // Store results globally
+        renderDashboardCharts(); // Update charts after allocation
         
         updateAgentStatus('allocation-optimizer', 'success');
         addLog('Allocation Optimizer', 'Allocation process completed successfully', 'success');
@@ -687,7 +759,8 @@ async function optimizeAllocation() {
     
     try {
         // Re-run the allocation optimization
-        await generateAllocationResults();
+        window.allocationResults = await geminiAI.optimizeAllocations(students, companies); // Store results globally
+        renderDashboardCharts(); // Update charts after optimization
         
         updateAgentStatus('allocation-optimizer', 'success');
         addLog('Allocation Optimizer', 'Allocations optimized successfully with improved matching', 'success');
@@ -713,6 +786,7 @@ async function generateAllocationResults() {
     try {
         // Use the enhanced AI to generate real allocations
         const allocations = await geminiAI.optimizeAllocations(students, companies);
+        window.allocationResults = allocations; // Make available globally for stats/charts
         
         if (allocations.length === 0) {
             resultsContainer.innerHTML = `
@@ -729,12 +803,18 @@ async function generateAllocationResults() {
                 <p>Average match score: <strong>${Math.round(allocations.reduce((sum, a) => sum + a.score, 0) / allocations.length)}%</strong></p>
             </div>
             <div class="allocation-results-list">
-                ${allocations.map(allocation => `
-                    <div class="allocation-item">
+                ${allocations.map((allocation, idx) => {
+                    let specialClass = '';
+                    if (idx === 0) specialClass = 'gold-effect top-recommendation';
+                    else if (idx === 1) specialClass = 'silver-effect top-recommendation';
+                    else if (idx === 2) specialClass = 'bronze-effect top-recommendation';
+                    return `
+                    <div class="allocation-item ${specialClass}">
                         <div class="allocation-header">
                             <div class="allocation-match">
                                 <strong>${allocation.student.name}</strong> → <strong>${allocation.company.name}</strong>
                                 <span class="match-score ${allocation.score >= 90 ? 'excellent' : allocation.score >= 80 ? 'good' : 'moderate'}">${allocation.score}% match</span>
+                                ${idx === 0 ? '<span class="recommend-badge gold">#1</span>' : idx === 1 ? '<span class="recommend-badge silver">#2</span>' : idx === 2 ? '<span class="recommend-badge bronze">#3</span>' : ''}
                             </div>
                             <div class="allocation-status">${allocation.status}</div>
                         </div>
@@ -746,7 +826,8 @@ async function generateAllocationResults() {
                             </div>
                         </div>
                     </div>
-                `).join('')}
+                    `;
+                }).join('')}
             </div>
         `;
         
@@ -770,6 +851,37 @@ async function generateAllocationResults() {
                 margin-bottom: 1rem;
                 background: #f8fafc;
                 transition: all 0.3s ease;
+                position: relative;
+            }
+            .allocation-item.top-recommendation {
+                border: 2.5px solid #fbbf24;
+                box-shadow: 0 0 0 3px #fde68a44;
+                background: #fffbe7;
+                z-index: 1;
+            }
+            .allocation-item.top-recommendation .allocation-header {
+                font-weight: bold;
+            }
+            .recommend-badge {
+                display: inline-block;
+                margin-left: 0.75rem;
+                padding: 0.2em 0.7em;
+                border-radius: 1em;
+                font-size: 0.95em;
+                font-weight: bold;
+                color: #fff;
+                vertical-align: middle;
+            }
+            .recommend-badge.gold {
+                background: linear-gradient(90deg, #fbbf24 60%, #f59e42 100%);
+                box-shadow: 0 0 8px #fbbf24aa;
+            }
+            .recommend-badge.silver {
+                background: linear-gradient(90deg, #a1a1aa 60%, #d1d5db 100%);
+                color: #222;
+            }
+            .recommend-badge.bronze {
+                background: linear-gradient(90deg, #f59e42 60%, #b45309 100%);
             }
             .allocation-item:hover {
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -825,6 +937,10 @@ async function generateAllocationResults() {
                 gap: 0.25rem;
                 font-size: 0.9rem;
                 color: #64748b;
+            }
+            @media (max-width: 600px) {
+                .allocation-item { padding: 1rem; }
+                .allocation-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
             }
         `;
         document.head.appendChild(style);
@@ -1533,6 +1649,30 @@ function closeAuthOverlay(event) {
     }
 }
 
+// Dark Mode Toggle
+function toggleDarkMode() {
+    const body = document.body;
+    body.classList.toggle('dark-mode');
+    const isDark = body.classList.contains('dark-mode');
+    localStorage.setItem('internai_dark_mode', isDark ? '1' : '0');
+    updateDarkModeIcon(isDark);
+}
+function updateDarkModeIcon(isDark) {
+    const btn = document.getElementById('dark-mode-toggle');
+    if (btn) {
+        btn.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    }
+}
+function loadDarkModePreference() {
+    const isDark = localStorage.getItem('internai_dark_mode') === '1';
+    if (isDark) {
+        document.body.classList.add('dark-mode');
+    } else {
+        document.body.classList.remove('dark-mode');
+    }
+    updateDarkModeIcon(isDark);
+}
+
 // Export functions for global access
 window.showAddStudentModal = showAddStudentModal;
 window.showAddCompanyModal = showAddCompanyModal;
@@ -1550,3 +1690,42 @@ window.clearLogs = clearLogs;
 window.showAuthTab = showAuthTab;
 window.signOut = signOut;
 window.closeAuthOverlay = closeAuthOverlay;
+window.toggleDarkMode = toggleDarkMode;
+window.renderDashboardCharts = renderDashboardCharts;
+
+// Students Search/Filter
+function filterStudents() {
+    const search = document.getElementById('student-search').value.toLowerCase();
+    const studentsList = document.getElementById('students-list');
+    studentsList.innerHTML = '';
+    students.filter(student => {
+        return (
+            student.name.toLowerCase().includes(search) ||
+            student.email.toLowerCase().includes(search) ||
+            (student.skills && student.skills.join(',').toLowerCase().includes(search))
+        );
+    }).forEach(student => {
+        const studentCard = createStudentCard(student);
+        studentsList.appendChild(studentCard);
+    });
+    updateStudentStats();
+}
+// Companies Search/Filter
+function filterCompanies() {
+    const search = document.getElementById('company-search').value.toLowerCase();
+    const companiesList = document.getElementById('companies-list');
+    companiesList.innerHTML = '';
+    companies.filter(company => {
+        return (
+            company.name.toLowerCase().includes(search) ||
+            company.industry.toLowerCase().includes(search) ||
+            company.location.toLowerCase().includes(search)
+        );
+    }).forEach(company => {
+        const companyCard = createCompanyCard(company);
+        companiesList.appendChild(companyCard);
+    });
+    updateCompanyStats();
+}
+window.filterStudents = filterStudents;
+window.filterCompanies = filterCompanies;

@@ -6,6 +6,7 @@
     <title>InternAI - Multi-Agent Allocation System</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="app">
@@ -94,6 +95,9 @@
                 </a>
             </div>
             <div class="nav-user">
+                <button id="dark-mode-toggle" class="btn btn-secondary btn-sm" onclick="toggleDarkMode()" title="Toggle dark mode">
+                    <i class="fas fa-moon"></i>
+                </button>
                 <div class="user-info" id="user-info" style="display: none;">
                     <span id="user-name">John Doe</span>
                     <button class="btn btn-secondary btn-sm" onclick="signOut()">Sign Out</button>
@@ -118,6 +122,15 @@
                         <div class="stat-content">
                             <h3 id="total-students">3</h3>
                             <p>Total Students</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="students-placed">0</h3>
+                            <p>Students Placed</p>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -151,20 +164,16 @@
 
                 <div class="dashboard-grid">
                     <div class="dashboard-card">
-                        <h3><i class="fas fa-chart-line"></i> Allocation Status</h3>
-                        <div class="status-item">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Approved</span>
-                            <span class="status-count">0</span>
-                        </div>
+                        <h3><i class="fas fa-chart-pie"></i> Skill Distribution</h3>
+                        <canvas id="skillsChart" height="120"></canvas>
                     </div>
                     <div class="dashboard-card">
-                        <h3><i class="fas fa-brain"></i> Recent AI Activity</h3>
-                        <div class="activity-item">
-                            <div class="activity-dot"></div>
-                            <span>Allocation Optimizer: Optimize Allocations</span>
-                            <span class="activity-time">21365ms</span>
-                        </div>
+                        <h3><i class="fas fa-industry"></i> Company Industries</h3>
+                        <canvas id="industriesChart" height="120"></canvas>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-tasks"></i> Allocation Status</h3>
+                        <canvas id="allocationStatusChart" height="120"></canvas>
                     </div>
                 </div>
             </div>
@@ -177,6 +186,9 @@
                     <button class="btn btn-primary" onclick="showAddStudentModal()">
                         <i class="fas fa-plus"></i> Add Student
                     </button>
+                </div>
+                <div class="search-filter-row">
+                    <input type="text" id="student-search" class="search-input" placeholder="Search students by name, skill, or email..." oninput="filterStudents()">
                 </div>
 
                 <div class="stats-grid">
@@ -222,6 +234,9 @@
                     <button class="btn btn-primary" onclick="showAddCompanyModal()">
                         <i class="fas fa-plus"></i> Add Company
                     </button>
+                </div>
+                <div class="search-filter-row">
+                    <input type="text" id="company-search" class="search-input" placeholder="Search companies by name, industry, or location..." oninput="filterCompanies()">
                 </div>
 
                 <div class="stats-grid">
